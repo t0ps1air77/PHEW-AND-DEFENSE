@@ -1,0 +1,608 @@
+import javax.swing.JFrame;
+import java.awt.Color;
+import java.awt.Image;
+import java.awt.Graphics;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import javax.swing.Timer;
+import java.awt.Font;
+
+public class PADFrame extends JFrame {
+
+//###############################################
+      // PHEW AND DEFENSE CONFIGURATION
+
+    // game_Loop_Tick sets the Game Loop tick.
+    // tick means how fast the game should loop.
+    // Default: 16
+    int Game_Loop_Tick = 16;
+
+    // Walls_At_Start sets how many walls should each player get at the start of the game
+    // Default: 4
+    int Walls_At_Start = 4;
+
+    // Ship_Hit_For_Score sets how many times require to hit the ship till the player gets a score
+    // Default: 3
+    int Ship_Hit_For_Score = 3;
+
+    // Rocket_Hit_To_Destroy sets how many times its required to hit the rocket till it destroys
+    // Default: 2
+    int Rocket_Hit_To_Destroy = 2;
+
+    // Rocket_Respawn_Time sets how long it will take for it to respawn
+    // the time is based on the Game Tick
+    // Default: 200
+    int Rocket_Respawn_Time = 200;
+
+    // Phew_And_Defense_Title sets what the title of the program would be (at the top left)
+    // Default: Phew And Defense
+    String Phew_And_Defense_Title = "Phew And Defense";
+
+    // check the class "rect.java" to config 2 more things
+    // rocketSpeed
+    // bulletSpeed
+//###############################################
+
+
+    Image image;
+    Graphics graphics;
+
+    rect rocketA;
+    rect RAWing;
+    rect RANose;
+    rect RABack;
+
+    rect rocketB;
+    rect RBWing;
+    rect RBNose;
+    rect RBBack;
+
+    rect RAShip;
+    rect RBShip;
+
+    rect RABullet;
+    rect RBBullet;
+
+    boolean RAUP = false;
+    boolean RADOWN = false;
+    boolean RABFired = false;
+    boolean RBUP = false;
+    boolean RBDOWN = false;
+    boolean RBBFired = false;
+
+    int RBHits = 0;
+    boolean RBDestroyed = false;
+    int RBRespawn = 0;
+    int RAHits = 0;
+    boolean RADestroyed = false;
+    int RARespawn = 0;
+
+    int RAScore = 0;
+    int RBScore = 0;
+
+    int RAShipHits = 0;
+    int RBShipHits = 0;
+
+    rect RAWall1;
+    rect RAWall2;
+    rect RAWall3;
+    rect RAWall4;
+    rect RBWall1;
+    rect RBWall2;
+    rect RBWall3;
+    rect RBWall4;
+
+    boolean RAW1Placed = false;
+    boolean RAW2Placed = false;
+    boolean RAW3Placed = false;
+    boolean RAW4Placed = false;
+    boolean RBW1Placed = false;
+    boolean RBW2Placed = false;
+    boolean RBW3Placed = false;
+    boolean RBW4Placed = false;
+
+    int RAW1Hits = 0;
+    int RAW2Hits = 0;
+    int RAW3Hits = 0;
+    int RAW4Hits = 0;
+    int RBW1Hits = 0;
+    int RBW2Hits = 0;
+    int RBW3Hits = 0;
+    int RBW4Hits = 0;
+
+    int RAWallInv = Walls_At_Start;
+    int RBWallInv = Walls_At_Start;
+
+    PADFrame() {
+        // rocketA's body
+        rocketA = new rect(180,250,20,15, new Color(255, 174, 174));
+        RAWing = new rect(180,240,7,34, new Color(255, 174, 174));
+        RANose = new rect(190,254,20,7, new Color(255, 174, 174));
+        RABack = new rect(175,250,20,15, new Color(255, 174, 174));
+
+        // rocketB's body
+        rocketB = new rect(775,250,20,15, new Color(123, 184, 255));
+        RBWing = new rect(788,240,7,34, new Color(123, 184, 255));
+        RBNose = new rect(765,254,20,7, new Color(123, 184, 255));
+        RBBack = new rect(780,250,20,15, new Color(123, 184, 255));
+
+        // rocket A and B's ship
+        RAShip = new rect(0,0,50,2000, new Color(255, 76, 76));
+        RBShip = new rect(950,0,50,2000, new Color(97, 178, 248));
+
+        // rocket A and B's bullet
+        RABullet = new rect(0,0,0,0, new Color(255, 111, 0));
+        RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+
+        // rocket A and B's walls
+        RAWall1 = new rect(0,0,0,0, new Color(104, 104, 104));
+        RAWall2 = new rect(0,0,0,0, new Color(104, 104, 104));
+        RAWall3 = new rect(0,0,0,0, new Color(104, 104, 104));
+        RAWall4 = new rect(0,0,0,0, new Color(104, 104, 104));
+        RBWall1 = new rect(0,0,0,0, new Color(104, 104, 104));
+        RBWall2 = new rect(0,0,0,0, new Color(104, 104, 104));
+        RBWall3 = new rect(0,0,0,0, new Color(104, 104, 104));
+        RBWall4 = new rect(0,0,0,0, new Color(104, 104, 104));
+
+        // the JFrame configuration:
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setLayout(null);
+        this.setTitle(Phew_And_Defense_Title);
+        this.setBackground(Color.BLACK); // sets the background of the JFrame
+        this.setOpacity(1);
+        this.setSize(1000,500); // sets the JFrame size
+        this.setResizable(false); // prevents the user from extending the JFrame
+        this.setLocationRelativeTo(null); // puts the JFrame in the center
+        this.addKeyListener(new AL());
+
+        // game loop
+        Timer gameLoop = new Timer(Game_Loop_Tick, e -> {
+            if (RAUP) { // checks if boolean RAUP is true. if yes then moves rocket up
+                rocketA.rocketUP();
+                RAWing.rocketUP();
+                RANose.rocketUP();
+                RABack.rocketUP();
+            }
+            if (RADOWN) { // checks if boolean RADOWN is true. if yes then moves rocket down
+                rocketA.rocketDOWN();
+                RAWing.rocketDOWN();
+                RANose.rocketDOWN();
+                RABack.rocketDOWN();
+            }
+            if (RABFired) { // checks if boolean RABFired. if yes then fires
+                RABullet.RABulletMOVE();
+                if (RABullet.intersects(RBNose) // checks if it hit the ship
+                || RABullet.intersects(rocketB)
+                || RABullet.intersects(RBWing)
+                || RABullet.intersects(RBBack)) {
+                    RBHits++;
+                    RABullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RABFired = false;
+                }
+                if (RABullet.intersects(RBShip)) { // checks if it hit rocketB's ship
+                    RABullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RBShipHits++;
+                    RABFired = false;
+                }
+                if (RBBullet.intersects(RAShip)) { // checks if rocketB's hit rocketA's ship
+                    RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RAShipHits++;
+                    RBBFired = false;
+                }
+                if (RABullet.intersects(RBWall1)) { // checks if rocketA's bullet hit rocketB's wall
+                    RABullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RBW1Hits++;
+                    RABFired = false;
+                }
+                if (RABullet.intersects(RBWall2)) { // checks if rocketA's bullet hit rocketB's wall
+                    RABullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RBW2Hits++;
+                    RABFired = false;
+                }
+                if (RABullet.intersects(RBWall3)) { // checks if rocketA's bullet hit rocketB's wall
+                    RABullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RBW3Hits++;
+                    RABFired = false;
+                }
+                if (RABullet.intersects(RBWall4)) { // checks if rocketA's bullet hit rocketB's wall
+                    RABullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RBW4Hits++;
+                    RABFired = false;
+                }
+
+                if (RBW1Hits == 2){ // checks if rocketB's wall got hit 2 times
+                    RBWall1 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RBW1Hits = 0;
+                    RBW1Placed = false;
+                }
+                if (RBW2Hits == 2){ // checks if rocketB's wall got hit 2 times
+                    RBWall2 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RBW2Hits = 0;
+                    RBW2Placed = false;
+                }
+                if (RBW3Hits == 2){ // checks if rocketB's wall got hit 2 times
+                    RBWall3 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RBW3Hits = 0;
+                    RBW3Placed = false;
+                }
+                if (RBW4Hits == 2){ // checks if rocketB's wall got hit 2 times
+                    RBWall4 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RBW4Hits = 0;
+                    RBW4Placed = false;
+                }
+            }
+            if (RBShipHits == Ship_Hit_For_Score) { // checks if rocketB's ship got hit 3 times
+                RAScore++;
+                RAWallInv+=2;
+                RBShipHits = 0;
+            }
+            if (RBHits == Rocket_Hit_To_Destroy) { // checks if rocketB got hit 2 times
+                RBDestroyed = true;
+                rocketB = new rect(775,250,0,0, new Color(123, 184, 255));
+                RBWing = new rect(788,240,0,0, new Color(123, 184, 255));
+                RBNose = new rect(765,254,0,0, new Color(123, 184, 255));
+                RBBack = new rect(780,250,0,0, new Color(123, 184, 255));
+            }
+            if (RBDestroyed) {
+                RBRespawn++;
+            }
+            if (RBRespawn >= Rocket_Respawn_Time) { // respawns rocketB after 200 milliseconds
+                rocketB = new rect(775,250,20,15, new Color(123, 184, 255));
+                RBWing = new rect(788,240,7,34, new Color(123, 184, 255));
+                RBNose = new rect(765,254,20,7, new Color(123, 184, 255));
+                RBBack = new rect(780,250,20,15, new Color(123, 184, 255));
+                RBDestroyed = false;
+                RBHits = 0;
+                RBRespawn = 0;
+            }
+
+            // rocketB's loops
+            if (RBUP) { // checks if boolean RBUP is true. if yes then moves rocket up
+                rocketB.rocketUP();
+                RBWing.rocketUP();
+                RBNose.rocketUP();
+                RBBack.rocketUP();
+            }
+            if (RBDOWN) { // checks if boolean RBDOWN is true. if yes then moves rocket down
+                rocketB.rocketDOWN();
+                RBWing.rocketDOWN();
+                RBNose.rocketDOWN();
+                RBBack.rocketDOWN();
+            }
+            if (RBBFired) { // checks if boolean RABFired. if yes then fires
+                RBBullet.RBBulletMOVE(); // checks if it hit the ship
+                if (RBBullet.intersects(RANose)
+                || RBBullet.intersects(rocketA)
+                || RBBullet.intersects(RAWing)
+                || RBBullet.intersects(RABack)) {
+                    RAHits++;
+                    RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RBBFired = false;
+                }
+                if (RBBullet.intersects(RAShip)) { // checks if it hit rocketB's ship
+                    RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RAShipHits++;
+                    RBBFired = false;
+                }
+                if (RBBullet.intersects(RAWall1)) { // checks if it hit rocketA's wall
+                    RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RAW1Hits++;
+                    RBBFired = false;
+                }
+                if (RBBullet.intersects(RAWall2)) { // checks if it hit rocketA's wall
+                    RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RAW2Hits++;
+                    RBBFired = false;
+                }
+                if (RBBullet.intersects(RAWall3)) { // checks if it hit rocketA's wall
+                    RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RAW3Hits++;
+                    RBBFired = false;
+                }
+                if (RBBullet.intersects(RAWall4)) { // checks if it hit rocketA's wall
+                    RBBullet = new rect(0,0,0,0, new Color(255, 111, 0));
+                    RAW4Hits++;
+                    RBBFired = false;
+                }
+
+                if (RAW1Hits == 2){ // checks if rocketA's wall has been hit 2 times
+                    RAWall1 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RAW1Hits = 0;
+                    RAW1Placed = false;
+                }
+                if (RAW2Hits == 2){ // checks if rocketA's wall has been hit 2 times
+                    RAWall2 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RAW2Hits = 0;
+                    RAW2Placed = false;
+                }
+                if (RAW3Hits == 2){ // checks if rocketA's wall has been hit 2 times
+                    RAWall3 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RAW3Hits = 0;
+                    RAW3Placed = false;
+                }
+                if (RAW4Hits == 2){ // checks if rocketA's wall has been hit 2 times
+                    RAWall4 = new rect(0,0,0,0, new Color(104, 104, 104));
+                    RAW4Hits = 0;
+                    RAW4Placed = false;
+                }
+            }
+            if (RAShipHits == Ship_Hit_For_Score) { // checks if rocketA's ship got hit 3 times
+                RBScore++;
+                RBWallInv+=2;
+                RAShipHits = 0;
+            }
+
+            if (RAHits == Rocket_Hit_To_Destroy) { // checks if rocketA got hit 2 times
+                rocketA = new rect(180,250,20,0, new Color(255, 174, 174));
+                RAWing = new rect(180,240,7,0, new Color(255, 174, 174));
+                RANose = new rect(190,254,20,0, new Color(255, 174, 174));
+                RABack = new rect(175,250,20,0, new Color(255, 174, 174));
+                RADestroyed = true;
+            }
+            if (RADestroyed) {
+                RARespawn++;
+            }
+            if (RARespawn >= Rocket_Respawn_Time) { // respawns rocketA after 200 game loop ticks
+                rocketA = new rect(180,250,20,15, new Color(255, 174, 174));
+                RAWing = new rect(180,240,7,34, new Color(255, 174, 174));
+                RANose = new rect(190,254,20,7, new Color(255, 174, 174));
+                RABack = new rect(175,250,20,15, new Color(255, 174, 174));
+                RADestroyed = false;
+                RAHits = 0;
+                RARespawn = 0;
+            }
+
+            // makes rocketA not go to up
+            if (rocketA.y < 60) {
+                rocketA.y = 60;
+            }
+            if (RAWing.y < 50) {
+                RAWing.y = 50;
+            }
+            if (RANose.y < 64) {
+                RANose.y = 64;
+            }
+            if (RABack.y < 60) {
+                RABack.y = 60;
+            }
+            // makes rocketA not go too down
+            if (rocketA.y > 455) {
+                rocketA.y = 455;
+            }
+            if (RAWing.y > 445) {
+                RAWing.y = 445;
+            }
+            if (RANose.y > 459) {
+                RANose.y = 459;
+            }
+            if (RABack.y > 455) {
+                RABack.y = 455;
+            }
+
+            // makes rocketB not go to up
+            if (rocketB.y < 60) {
+                rocketB.y = 60;
+            }
+            if (RBWing.y < 50) {
+                RBWing.y = 50;
+            }
+            if (RBNose.y < 64) {
+                RBNose.y = 64;
+            }
+            if (RBBack.y < 60) {
+                RBBack.y = 60;
+            }
+            // makes rocketB not go too down
+            if (rocketB.y > 455) {
+                rocketB.y = 455;
+            }
+            if (RBWing.y > 445) {
+                RBWing.y = 445;
+            }
+            if (RBNose.y > 459) {
+                RBNose.y = 459;
+            }
+            if (RBBack.y > 455) {
+                RBBack.y = 455;
+            }
+
+            repaint();
+        });
+        gameLoop.start();
+
+        this.setVisible(true);
+
+    }
+
+    // draws those rocket and other stuff
+    public void paint(Graphics g) {
+        image = createImage(this.getWidth(), this.getHeight());
+        graphics = image.getGraphics();
+        g.drawImage(image,0,0,this);
+
+        // draws rocketA's body
+        if (!RADestroyed) {
+            rocketA.draw(g);
+            RAWing.draw(g);
+            RANose.draw(g);
+            RABack.draw(g);
+        }
+
+        // draws rocketB's body
+        if (!RBDestroyed) {
+            rocketB.draw(g);
+            RBWing.draw(g);
+            RBNose.draw(g);
+            RBBack.draw(g);
+        }
+
+        // draws rocket A and B's ship
+        RAShip.draw(g);
+        RBShip.draw(g);
+
+        // draws rocket A and B's bullet
+        RABullet.draw(g);
+        RBBullet.draw(g);
+
+        // draws rocketA's walls
+        RAWall1.draw(g);
+        RAWall2.draw(g);
+        RAWall3.draw(g);
+        RAWall4.draw(g);
+
+        // draws rocketB's wall
+        RBWall1.draw(g);
+        RBWall2.draw(g);
+        RBWall3.draw(g);
+        RBWall4.draw(g);
+
+        // draws the scoreboard in the top middle (0 | 0)
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial",Font.BOLD, 50));
+        g.drawString(RAScore + "  |  " + RBScore, 430,80);
+
+        // draws how many walls left for rocketA (WALLS LEFT: 4)
+        g.setFont(new Font("Arial",Font.BOLD,15));
+        g.drawString("WALLS LEFT: " + RAWallInv, 200,60);
+
+        // draws how many walls left for rocketB (WALLS LEFT: 4)
+        g.setFont(new Font("Arial",Font.BOLD, 15));
+        g.drawString("WALLS LEFT: " + RBWallInv,700,60);
+    }
+
+    // the control
+    public class AL extends KeyAdapter {
+        public void keyPressed(KeyEvent e) {
+            // for rocketA
+            if (e.getKeyCode() == KeyEvent.VK_W) { // W = UP
+                RAUP = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_A) { // A = UP
+                RAUP = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_S) { // S = DOWN
+                RADOWN = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_D) { // D = DOWN
+                RADOWN = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_SHIFT && !RABFired && !RADestroyed) { // L-SHIFT = FIRES BULLET
+                RABFired = true;
+                int RANY = RANose.y + 1;
+                int RANX = RANose.x + 20;
+                RABullet = new rect(RANX,RANY,20,5, new Color(255, 111, 0));
+            }
+            if (e.getKeyCode() == KeyEvent.VK_E && RAWallInv != 0) { // E = PLACE WALL
+                if (!RAW1Placed) { // checks if there is a wall already placed
+                    if (rocketA.y <= 150) { // checks if the player in the coordinate for wall
+                        RAWall1 = new rect(100,50,20,100, new Color(104, 104, 104));
+                        RAWallInv--;
+                        RAW1Placed = true;
+                    }
+                }
+                if (!RAW2Placed) { // checks if there is a wall already placed
+                    if (rocketA.y >= 152 && rocketA.y < 252) { // checks if the player in the coordinate for wall
+                        RAWall2 = new rect(100,153,20,100, new Color(104, 104, 104));
+                        RAWallInv--;
+                        RAW2Placed = true;
+                    }
+                }
+                if (!RAW3Placed) { // checks if there is a wall already placed
+                    if (rocketA.y >= 254 && rocketA.y < 354) { // checks if the player in the coordinate for wall
+                        RAWall3 = new rect(100,256,20,100, new Color(104, 104, 104));
+                        RAWallInv--;
+                        RAW3Placed = true;
+                    }
+                }
+                if (!RAW4Placed) { // checks if there is a wall already placed
+                    if (rocketA.y >= 358 && rocketA.y < 458) { // checks if the player in the coordinate for wall
+                        RAWall4 = new rect(100,359,20,115, new Color(104, 104, 104));
+                        RAWallInv--;
+                        RAW4Placed = true;
+                    }
+                }
+            }
+
+            // for rocketB
+            if (e.getKeyCode() == KeyEvent.VK_UP) { // UP = UP
+                RBUP = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_LEFT) { // LEFT = UP
+                RBUP = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) { // UP = UP
+                RBDOWN = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_RIGHT) { // RIGHT = DOWN
+                RBDOWN = true;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_CONTROL && !RBBFired && !RBDestroyed) { // R-CONTROL = FIRES BULLET
+                RBBFired = true;
+                int RBNY = RBNose.y + 1;
+                int RBNX = RBNose.x - 20;
+                RBBullet = new rect(RBNX,RBNY,20,5, new Color(255, 111, 0));
+            }
+            if (e.getKeyCode() == KeyEvent.VK_NUMPAD0 && RBWallInv != 0) { // 0 = PLACE WALL
+                if (!RBW1Placed) { // checks if there is a wall already placed
+                    if (rocketB.y <= 150) { // checks if the player in the coordinate for wall
+                        RBWall1 = new rect(850,50,20,100, new Color(104, 104, 104));
+                        RBWallInv--;
+                        RBW1Placed = true;
+                    }
+                }
+                if (!RBW2Placed) { // checks if there is a wall already placed
+                    if (rocketB.y >= 152 && rocketB.y < 252) { // checks if the player in the coordinate for wall
+                        RBWall2 = new rect(850,153,20,100, new Color(104, 104, 104));
+                        RBWallInv--;
+                        RBW2Placed = true;
+                    }
+                }
+                if (!RBW3Placed) { // checks if there is a wall already placed
+                    if (rocketB.y >= 254 && rocketB.y < 354) { // checks if the player in the coordinate for wall
+                        RBWall3 = new rect(850,256,20,100, new Color(104, 104, 104));
+                        RBWallInv--;
+                        RBW3Placed = true;
+                    }
+                }
+                if (!RBW4Placed) { // checks if there is a wall already placed
+                    if (rocketB.y >= 358 && rocketB.y < 458) { // checks if the player in the coordinate for wall
+                        RBWall4 = new rect(850,359,20,115, new Color(104, 104, 104));
+                        RBWallInv--;
+                        RBW4Placed = true;
+                    }
+                }
+            }
+        }
+
+        public void keyReleased(KeyEvent e) {
+            // for rocketA
+            if (e.getKeyCode() == KeyEvent.VK_W) { // W = UP
+                RAUP = false;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_A) { // A = UP
+                RAUP = false;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_S) { // S = DOWN
+                RADOWN = false;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_D) { // D = DOWN
+                RADOWN = false;
+            }
+
+            // for rocketB
+            if (e.getKeyCode() == KeyEvent.VK_UP) { // UP = UP
+                RBUP = false;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_LEFT) { // LEFT = UP
+                RBUP = false;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_DOWN) { // UP = UP
+                RBDOWN = false;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_RIGHT) { // RIGHT = DOWN
+                RBDOWN = false;
+            }
+        }
+    }
+
+}

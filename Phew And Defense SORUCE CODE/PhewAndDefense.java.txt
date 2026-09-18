@@ -1,0 +1,12 @@
+public class PhewAndDefense {
+
+    public static void main(String[] args) {
+        // dear players
+        // my game sucks.
+        // dear geeks
+        // my code sucks
+        // and my comments sucks.
+
+        PADFrame PADFrame = new PADFrame();
+    }
+}
