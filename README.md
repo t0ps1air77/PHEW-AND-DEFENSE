@@ -14,6 +14,7 @@ CONTROL:
    SHIFT = FIRE BULLET
 
    E     = PLACE WALL
+   
 ---------------------------------------------------------------------------
   BLUE ROCKET:
    UP KEY = UP
@@ -27,6 +28,7 @@ CONTROL:
    CTRL      = FIRE BULLET
 
    NUMPAD-0  = PLACE WALL
+   
 ---------------------------------------------------------------------------
 GAME RULES:
  1. PLAYERS:
@@ -46,6 +48,7 @@ GAME RULES:
 
  7. when a player shoots a BULLET. the player cant shoot another BULLET till it 
     hits something (example: SHIP, ROCKET, WALL)
+    
 ---------------------------------------------------------------------------
 
 HOW TO DOWNLOAD IT:
